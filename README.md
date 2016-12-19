@@ -4,6 +4,7 @@ Created by University of Maryland undergraduates Ben Cannon, Eric Wallace and Om
 MATLAB simulation where N robots must locate each other, form a line, and move as one. Our research publication is visible at /dox/final_paper.pdf
 
 **Introduction:**
+
 For a formal definition of the problem intended to be solved, please see /dox/ENEE 322 Project Fall 2016 v1.pdf
 
 For our research publication, please see /dox/final_paper.pdf
