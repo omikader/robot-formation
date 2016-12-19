@@ -1,0 +1,21 @@
+function dzdt=diffdrive_test_tworobots(z, waypoints)
+% This defines the right hand side of the differential equation model for
+% the simple car with two wheels. UR,rt is the control for the right wheel
+% and UL,lt is the control for the left wheel
+N=2;
+r=0.1; % Radius of wheel
+L=0.5; % Distance between wheels
+[UR, UL] = determine_control_tworobots(z, L, waypoints);
+dzdt = [
+    % FIRST ROBOT
+    (r*(UR(1)+UL(1))/2)*cos(z(3));
+    (r*(UR(1)+UL(1))/2)*sin(z(3));
+    (r*(UR(1)-UL(1)/L));
+    0;           %ORDER IS DETERMINED BY ERICS CODE AND DOES NOT CHANGE WITH TIME
+    % SECOND ROBOT
+    (r*(UR(2)+UL(2))/2)*cos(z((N-1)*4+3));
+    (r*(UR(2)+UL(2))/2)*sin(z((N-1)*4+3));
+    (r*(UR(2)-UL(2))/L);
+    0           %ORDER IS DETERMINED BY ERICS CODE AND DOES NOT CHANGE WITH TIME
+    ];
+end

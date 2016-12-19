@@ -1,0 +1,114 @@
+%% Ben Cannon
+function [UR, UL] = determine_control_tworobots(z, L, waypoints)
+N = length(z)/4;
+for i = 1:N
+    if(i ==1)
+        xr = z(1); yr = z(2); theta = z(3); order = z(4)
+    else
+        xr = [xr;z(1+(N-1)*4)]; yr = [yr; z(2+(N-1)*4)]; theta = [theta;z(3+(N-1)*4)];order = [order;z(4+(N-1)*4)];
+    end
+    while((theta(i)>2*pi())||(theta(i)<0)) %Ensure theta is in the bounds between [0, 2pi]
+        if(theta(i)>2*pi())
+            theta(i)=theta(i)-2*pi();
+        else
+            theta(i) = theta(i)+2*pi();
+        end
+    end
+end
+% MAY NEED SOME OF THE ORDERING STUFF AS GLOBALS (leader index, etc.)
+global xprev yprev prevind xnext ynext nextind finish orientMode; % IGNORING ORIENT MODE FOR NOW
+
+if isempty(xprev)
+    xprev = waypoints(1,1);
+    yprev = waypoints(1,2);
+    prevind = 1;
+    xnext = waypoints(2,1);
+    ynext = waypoints(2,2);
+    nextind = 2;
+    finish = 0;
+    %    orientMode = 1; % IGNORING FOR NOW
+end
+
+% if (orientMode)
+%     % Turning Parameters
+%     degree_offset = 45;
+%     rad_offset = degree_offset*(pi()/180);
+%     wheel_velocity=5;
+%     % Determine goal angle
+%     goal_angle = findGoalAngle(xr, yr, xnext, ynext);
+%     % Determine turning direction
+%     direction = findTurnDirection(theta,goal_angle);
+%     [orientMode UL UR] = turn2GoalAngle(theta, goal_angle, direction, rad_offset, wheel_velocity);
+
+
+% else
+
+% Determine leader index
+for i = 1:N
+    if(order(i) == 1)
+        leaderindex = i;
+        break;
+    end
+end
+
+% LEADER MODE
+
+% Find the goalpoint to travel to
+[goalpoint, NextFlag] = findGoalPoint(xr(leaderindex), yr(leaderindex), xprev, yprev, xnext, ynext);
+if(NextFlag)
+    while(NextFlag&&~finish)
+        prevind=prevind+1;
+        if(prevind >= length(waypoints(:,1)))
+            %Go to finish mode
+            finish = 1;
+        else
+            xprev = waypoints(prevind,1);
+            yprev = waypoints(prevind,2);
+            nextind = nextind+1;
+            xnext = waypoints(nextind,1);
+            ynext = waypoints(nextind,2);
+            [goalpoint, NextFlag] = findGoalPoint(xr(leaderindex), yr(leaderindex), xprev, yprev, xnext, ynext);
+        end
+    end
+end
+if(finish) % Case when robot is at the end or needs to wait
+    UR(leaderindex) = 0;
+    UL(leaderindex) = 0;
+else
+    % Using pure pursuit to get to goal point
+    [UR(leaderindex), UL(leaderindex)] = pure_pursuit(xr (leaderindex), yr(leaderindex), theta(leaderindex), goalpoint(1), goalpoint(2) , L);
+end
+
+% FOLLOWER MODE
+robot_spacing = 1; %Keep robots one meter apart
+
+for i = 1:N
+    % find ith robot's leader
+    if(order(i)==1)
+        continue;
+    end
+    for j=1:N
+        if(order(j)==order(i)-1)
+            ileaderindex = j;
+            break;
+        end
+    end
+    % Am I too close to the leader? if so halt
+    
+    iD = sqrt((xr(i)-xr(ileaderindex))^2 + (yr(i)- yr(ileaderindex))^2);
+    istop = 0;
+    if(iD<robot_spacing)
+        istop = 1;
+    end
+    if(istop) % robot is too close to leader
+        UR(leaderindex) = 0;
+        UL(leaderindex) = 0;
+    else % Follow the leader
+        [igoalpoint, ~] = findGoalPoint(xr(i), yr(i), xr(i), yr(i), xr(ileaderindex), yr(ileaderindex));
+        % Using pure pursuit to get to goal point on way to leader bot
+        [UR(i), UL(i)] = pure_pursuit(xr (i), yr(i), theta(i), igoalpoint(1), igoalpoint(2) , L);
+    end
+end
+
+% end
+end
