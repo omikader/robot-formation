@@ -1,4 +1,4 @@
-# robot-formation
+# Robot Formation and Path Tracking
 MATLAB simulation where N robots must locate each other, form a line, and move as one. Our research publication is visible at /dox/final_paper.pdf
 
 **Introduction:**
