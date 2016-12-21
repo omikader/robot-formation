@@ -13,7 +13,7 @@ For a solved demonstration of the five scenarios described in the publication, s
 
 **Running the Simulation:**
 
-In order to keep our code readable and modular, we moved many of the calculations into helper functions that will be called in our "main.m" file. In order to run the simulation, simply open the "Code" folder in MATLAB and enter "main". This will run and plot all 5 simulations, as described in the project guidelines.
+In order to keep our code readable and modular, we moved many of the calculations into helper functions that will be called in our "main.m" file. In order to run the simulation, simply open the contents of /src in MATLAB and enter "main". This will run and plot all 5 simulations, as described in the project guidelines.
 
 The main file contains initial conditions and destination points for different circumstances. To test different functionality, simply modify those state conditions vectors.
 
